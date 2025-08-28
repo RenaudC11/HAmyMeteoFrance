@@ -100,7 +100,7 @@ class MeteoFranceSensor(SensorEntity):
                 "puissance_solaire": {"value": round((rg / 360), 2) if rg else None, "unit": "W/m²"},
                 "ensoleillement": {"value": obs.get("insolh"), "unit": "min"},
                 "visibilite": {"value": obs.get("vv"), "unit": "m"},
-                """ "raw": obs, """
+                "raw": obs,
             }
 
             self._attr_native_value = attrs["temperature"]["value"]
