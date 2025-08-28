@@ -88,6 +88,8 @@ class MeteoFranceSensor(Entity):
                 "temperature_20cm": {"value": t_20-273.15 if t_20 is not None else None, "unit": "°C"},
                 "temperature_100cm": {"value": t_100-273.15 if t_100 is not None else None, "unit": "°C"},
                 "humidite": {"value": resp.get("u"), "unit": "%"},
+                
+                # Pression atmosphérique réduite au niveau de la mer en hPa
                 "pression": {"value": p/100 if p is not None else None, "unit": "hPa"},
                 "vent_direction": {"value": resp.get("dd"), "unit": "°"},
                 "vent_force": {"value": ff*3.6 if ff is not None else None, "unit": "km/h"},
