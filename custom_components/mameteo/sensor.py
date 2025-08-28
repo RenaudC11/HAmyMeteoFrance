@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 import requests
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import SensorEntity
 from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities([MeteoFranceSensor(api_key, station, update_interval, entity_name)], True)
 
 
-class MeteoFranceSensor(Entity):
+class MeteoFranceSensor(SensorEntity):
     """Capteur unique pour toutes les données Météo-France."""
 
     def __init__(self, api_key, station, update_interval, entity_name):
