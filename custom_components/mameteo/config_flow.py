@@ -24,7 +24,7 @@ class MameteoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
-            # Could add validation here (test API call) — kept simple
+            # Création de l'entrée
             return self.async_create_entry(
                 title=user_input.get(CONF_ENTITY_NAME, "Ma Météo France"),
                 data=user_input,
