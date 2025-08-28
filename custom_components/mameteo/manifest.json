@@ -1,7 +1,7 @@
 {
   "domain": "mameteo",
   "name": "Ma Météo France Obs",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "documentation": "https://public-api.meteofrance.fr/",
   "requirements": ["requests", "voluptuous"],
   "codeowners": [],
