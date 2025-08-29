@@ -36,7 +36,7 @@ class MameteoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 MODE_SINGLE: "Un seul capteur (température) avec toutes les autres valeurs en attributs",
                 MODE_SPLIT: "Un capteur par valeur",
             }),
-            vol.Optional(CONF_UPDATE_MINUTES, default=DEFAULT_UPDATE_MINUTES): vol.All(int, vol.Range(min=1, max=60)),
+            vol.Optional(CONF_UPDATE_MINUTES, default=DEFAULT_UPDATE_MINUTES): vol.All(vol.Coerce(int), vol.Range(min=1, max=60)),
         })
 
         return self.async_show_form(step_id="user", data_schema=schema)
