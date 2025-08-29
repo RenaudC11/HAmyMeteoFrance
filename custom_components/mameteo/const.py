@@ -50,6 +50,7 @@ MODE_SPLIT  = "split"    # 1 sensor par mesure
 SENSOR_SPECS: dict[str, dict] = {
     # Températures (K -> °C)
     "t":      {"name": "Température 2m",        "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "td":     {"name": "Température de rosée",  "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
     "t_10":   {"name": "Température -10 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
     "t_20":   {"name": "Température -20 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
     "t_50":   {"name": "Température -50 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
