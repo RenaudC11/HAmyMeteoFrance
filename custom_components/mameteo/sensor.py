@@ -32,7 +32,7 @@ def _convert_value(key: str, value: Any) -> Any:
         return None
     try:
         # Températures K -> °C
-        if key in ("t", "t_10", "t_20", "t_50", "t_100", "tx", "tn"):
+        if key in ("t", "td", "t_10", "t_20", "t_50", "t_100", "tx", "tn"):
             return round(float(value) - 273.15, 2)
         # Vent m/s -> km/h
         if key in ("ff", "fxi", "fxy"):
