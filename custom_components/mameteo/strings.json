@@ -1,0 +1,10 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ma Météo France (DPObs 6 min)",
+        "description": "Configurez l'accès à l'API Météo-France et le mode de capteurs."
+      }
+    }
+  }
+}
