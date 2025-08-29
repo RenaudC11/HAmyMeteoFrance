@@ -1,133 +1,102 @@
 # HAmyMeteoFrance
 
-Une intégration **Home Assistant** permettant de récupérer toutes les
-données disponibles depuis l'API publique de **Météo-France (données
-SYNOP)**.\
-Les informations sont exposées sous forme d'un **capteur unique** avec
-de nombreux attributs détaillés.
+**Version : 1.8.0**\
+Custom component Home Assistant pour récupérer les observations temps
+réel de Météo-France (API publique).
 
-------------------------------------------------------------------------
+## 🚀 Fonctionnalités
 
-## 🚀 Installation
+-   Récupération des données d'observation d'une station Météo-France
+    (par défaut : 69029001 Lyon-Bron).
+-   Deux modes d'installation :
+    1.  **Mode unique** : une seule entité `sensor.nom_personnalisé`
+        avec toutes les valeurs en attributs.
+        -   La valeur principale correspond à la température instantanée
+            (`t`).
+    2.  **Mode multiple** : création d'un capteur distinct pour chaque
+        mesure (`temperature`, `vent`, `pluie`, etc.).
+-   Configuration simplifiée via l'UI (config_flow).
 
-### Via HACS (recommandé)
+## 🔑 Paramètres demandés lors de l'installation
 
-1.  Ouvrir **HACS** dans Home Assistant.
-2.  Aller dans **Intégrations** → **3 points en haut à droite** →
-    **Dépôts personnalisés**.
-3.  Ajouter ce dépôt GitHub avec la catégorie **Intégration**.
-4.  Rechercher `HAmyMeteoFrance` dans HACS et l'installer.
-5.  Redémarrer Home Assistant.
-
-### Manuel (si pas de HACS)
-
-1.  Copier le dossier `mameteo` dans :
-
-        config/custom_components/mameteo/
-
-2.  Redémarrer Home Assistant.
-
-------------------------------------------------------------------------
-
-## ⚙️ Configuration
-
-L'intégration se configure directement via l'interface graphique :\
-1. Aller dans **Paramètres** → **Appareils et services** → **Ajouter une
-intégration**. 2. Rechercher **MaMeteo**. 3. Saisir :\
-- **Nom de l'entité** (ex. `Météo Lyon` → donnera `sensor.meteo_lyon`)\
-- **Latitude & Longitude** (de la station météo la plus proche).\
-- **Fréquence de mise à jour** (en minutes).
-
-Un capteur principal est créé :
-
-    sensor.<nom_entite>
-
-------------------------------------------------------------------------
+-   **Clé API** (fourni par Météo-France -- portail développeur).\
+-   **Numéro de station** (par défaut : `69029001` -- Lyon Bron).\
+-   **Nom de l'entité** (libre).\
+-   **Mode de création** (unique ou multiple).
 
 ## 📊 Données disponibles
 
-Toutes les valeurs sont exposées comme attributs du capteur.
+  --------------------------------------------------------------------------------
+  Code API      Description             Unité     `device_class`   `state_class`
+  ------------- ----------------------- --------- ---------------- ---------------
+  `t`           Température instantanée °C        temperature      measurement
 
-  ----------------------------------------------------------------------------
-  Attribut             Description           Unité       Commentaire
-  -------------------- --------------------- ----------- ---------------------
-  `temperature`        Température de l'air  °C          Mesure instantanée
+  `tx`          Température max         °C        temperature      measurement
 
-  `humidity`           Humidité relative     \%          0--100 %
+  `tn`          Température min         °C        temperature      measurement
 
-  `pressure`           Pression              hPa         Niveau mer
-                       atmosphérique                     
+  `u`           Humidité relative       \%        humidity         measurement
 
-  `wind_speed`         Vitesse moyenne du    m/s         Mesurée sur 10
-                       vent                              minutes
+  `ux`          Humidité max            \%        humidity         measurement
 
-  `wind_direction`     Direction du vent     °           Azimut (0° = Nord)
+  `un`          Humidité min            \%        humidity         measurement
 
-  `gust`               Rafales de vent       m/s         Sur 10 minutes
-                       maximales                         
+  `ff`          Vent moyen              km/h      wind_speed       measurement
 
-  `rain_1h`            Précipitations        mm          
-                       cumulées sur 1h                   
+  `d`           Direction vent moyen    °         wind_direction   measurement
 
-  `rain_24h`           Précipitations        mm          
-                       cumulées sur 24h                  
+  `fx`          Rafale max              km/h      wind_speed       measurement
 
-  `cloud_cover`        Nébulosité totale     \%          Ciel couvert
+  `dxy`         Direction rafale max    °         wind_direction   measurement
 
-  `visibility`         Visibilité            m           
-                       horizontale                       
+  `fxy`         Vitesse rafale max      km/h      wind_speed       measurement
 
-  `dew_point`          Point de rosée        °C          Calculé à partir T°
-                                                         et humidité
+  `dxi`         Direction vent          °         wind_direction   measurement
+                instantané                                         
 
-  `snow_depth`         Hauteur de neige au   cm          Si dispo
-                       sol                               
+  `fxi`         Vitesse vent instantané km/h      wind_speed       measurement
 
-  `solar_radiation`    Rayonnement global    W/m²        Si dispo
+  `rr1`         Pluie 1h                mm        precipitation    measurement
 
-  `observation_time`   Heure de la dernière  ISO 8601    UTC
-                       mesure                            
-  ----------------------------------------------------------------------------
+  `rr3`         Pluie 3h                mm        precipitation    measurement
 
-⚠️ Les données disponibles dépendent de la station météo choisie (toutes
-ne publient pas tous les attributs).
+  `rr6`         Pluie 6h                mm        precipitation    measurement
 
-------------------------------------------------------------------------
+  `rr24`        Pluie 24h               mm        precipitation    measurement
 
-## 🔄 Fréquence de mise à jour
+  `t_50`        Température sous abri   °C        temperature      measurement
+                50cm                                               
 
--   Définie par l'utilisateur lors de la configuration (ex. toutes les
-    10 minutes).\
--   Peut être modifiée en supprimant/recréant l'intégration.
+  `etat_sol`    État du sol             code      none             none
 
-------------------------------------------------------------------------
+  `sss`         Hauteur de neige        cm        none             measurement
 
-## 🖼 Exemple dans Lovelace
+  `n`           Nébulosité totale       \%        none             measurement
 
-``` yaml
-type: entities
-title: Météo France
-entities:
-  - entity: sensor.meteo_lyon
-    name: Météo Lyon
-```
+  `ray_glo01`   Rayonnement global      W/m²      irradiance       measurement
 
-⚡ Tous les attributs peuvent être affichés via une carte **entities**,
-**glance** ou intégrés dans **des graphiques** (Lovelace charts).
+  `pres`        Pression station        hPa       pressure         measurement
 
-------------------------------------------------------------------------
+  `pmer`        Pression réduite au     hPa       pressure         measurement
+                niveau mer                                         
+  --------------------------------------------------------------------------------
 
-## 📌 Notes
+## ⚙️ Installation
 
--   Cette intégration utilise les données publiques **Météo-France
-    SYNOP**.\
--   Certains attributs peuvent être absents selon la station ou la
-    disponibilité de l'API.\
--   Compatible avec **Home Assistant Green** et toute installation HA
-    avec HACS.
+1.  Copier le dossier `custom_components/mameteo` dans
+    `config/custom_components/` de votre Home Assistant.
+2.  Redémarrer Home Assistant.
+3.  Ajouter l'intégration **Ma Météo France Obs** via **Paramètres →
+    Appareils et Services → Ajouter une intégration**.
 
-------------------------------------------------------------------------
+## 📝 Notes
 
-## 📄 Licence
+-   Les valeurs `null` dans l'API sont ignorées.\
+-   L'API Météo-France impose des limitations de requêtes (veillez à ne
+    pas dépasser).\
+-   Le composant est compatible avec `recorder`, `statistics` et
+    `energy dashboard`.
 
-MIT
+## 👤 Auteur
+
+Développé par [RenaudC11](https://github.com/RenaudC11/HAmyMeteoFrance)
