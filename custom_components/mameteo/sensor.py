@@ -35,12 +35,6 @@ def _convert_value(key: str, value: Any) -> Any:
         # Températures K -> °C
         if key in ("t", "td", "t_10", "t_20", "t_50", "t_100", "tx", "tn"):
             return round(float(value) - 273.15, 2)
-        # Vent m/s -> km/h
-        if key in ("ff", "fxi", "fxy"):
-            return round(float(value) * 3.6, 1)
-        # Pression Pa -> hPa
-        if key in ("pres", "pmer"):
-            return round(float(value) / 100.0, 1)
         # Rayonnement J/m² (6 min) -> W/m²
         if key == "ray_glo01":
             return round(float(value) / 360.0, 2)
