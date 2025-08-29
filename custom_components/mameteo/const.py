@@ -49,47 +49,47 @@ MODE_SPLIT  = "split"    # 1 sensor par mesure
 # etat_sol, sss, n
 SENSOR_SPECS: dict[str, dict] = {
     # Températures (K -> °C)
-    "t":      {"name": "Température 2m",        "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "t":      {"name": "température sous abri", "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
     "td":     {"name": "Température de rosée",  "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "t_10":   {"name": "Température -10 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "t_20":   {"name": "Température -20 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "t_50":   {"name": "Température -50 cm",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "t_100":  {"name": "Température -100 cm",   "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "tx":     {"name": "Température max",       "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
-    "tn":     {"name": "Température min",       "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "t_10":   {"name": "température à 10 centimètres de profondeur sous le sol",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "t_20":   {"name": "température à 20 centimètres de profondeur sous le sol",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "t_50":   {"name": "température à 50 centimètres de profondeur sous le sol",    "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "t_100":  {"name": "température à 100 centimètres de profondeur sous le sol",   "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "tx":     {"name": "température maximale de l'air à 2 mètres au-dessus du sol",       "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
+    "tn":     {"name": "température minimale de l'air à 2 mètres au-dessus du sol",       "unit": "°C",  "device_class": "temperature", "state_class": "measurement"},
 
     # Humidité (%)
-    "u":      {"name": "Humidité",              "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
-    "ux":     {"name": "Humidité max",          "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
-    "un":     {"name": "Humidité min",          "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
+    "u":      {"name": "Humidité relative horaire",               "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
+    "ux":     {"name": "Humidité relative maximale dans l’heure", "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
+    "un":     {"name": "humidité relative minimale dans l’heure", "unit": "%",   "device_class": "humidity",    "state_class": "measurement"},
 
     # Vent (m/s -> km/h) et directions (°)
-    "ff":     {"name": "Vent moyen 10m",        "unit": "km/h","device_class": "wind_speed",  "state_class": "measurement"},
-    "fxi":    {"name": "Rafale instantanée",    "unit": "km/h","device_class": "wind_speed",  "state_class": "measurement"},
-    "fxy":    {"name": "Vent max 10 min",       "unit": "km/h","device_class": "wind_speed",  "state_class": "measurement"},
-    "dd":     {"name": "Direction vent",        "unit": "°",   "device_class": None,          "state_class": "measurement"},
-    "dxi":    {"name": "Direction rafale inst.", "unit": "°",  "device_class": None,          "state_class": "measurement"},
-    "dxy":    {"name": "Direction vent max 10m","unit": "°",   "device_class": None,          "state_class": "measurement"},
+    "ff":     {"name": "Force du vent moyen à 10 mètres au-dessus du sol",                 "unit": "m/s","device_class": "wind_speed",  "state_class": "measurement"},
+    "fxi":    {"name": "Force maximale du vent instantané sur 10 mn",                      "unit": "m/s","device_class": "wind_speed",  "state_class": "measurement"},
+    "fxy":    {"name": "force maximale du vent dans l’heure à 10 mètres au-dessus du sol", "unit": "m/s","device_class": "wind_speed",  "state_class": "measurement"},
+    "dd":     {"name": "Direction vent max à 10 mètres au-dessus du sol",                  "unit": "°",   "device_class": None,          "state_class": "measurement"},
+    "dxi":    {"name": "Direction vent max instantané sur 10 mn",                          "unit": "°",  "device_class": None,          "state_class": "measurement"},
+    "dxy":    {"name": "Direction vent max dans l’heure à 10 mètres au-dessus du sol",     "unit": "°",   "device_class": None,          "state_class": "measurement"},
 
     # Visibilité
-    "vv":     {"name": "Visibilité",            "unit": "m",   "device_class": "distance",    "state_class": "measurement"},
+    "vv":     {"name": "Visibilité horizontale",            "unit": "m",   "device_class": "distance",    "state_class": "measurement"},
 
     # Précipitations (mm)
-    "rr_per": {"name": "Précipitations 6 min",  "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
-    "rr1":    {"name": "Précipitations 1h",     "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
-    "rr":     {"name": "Précipitations",        "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
-    "rr24":   {"name": "Précipitations 24h",    "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr_per": {"name": "Précipitations tombées sur 6 min",  "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr1":    {"name": "Précipitations 1h",                 "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr":     {"name": "Précipitations",                    "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr24":   {"name": "Précipitations 24h",                "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
 
     # Rayonnement / Ensoleillement
-    "ray_glo01": {"name": "Rayonnement global", "unit": "W/m²","device_class": "irradiance",  "state_class": "measurement"},
-    "insolh": {"name": "Ensoleillement 1h",     "unit": "min", "device_class": None,          "state_class": "measurement"},
+    "ray_glo01":  {"name": "Rayonnement global sur la période",       "unit": "J/m²","device_class": "irradiance",  "state_class": "measurement"},
+    "insolh":     {"name": "durée insolation au cours de la période", "unit": "min", "device_class": None,          "state_class": "measurement"},
 
     # Pression (Pa -> hPa)
-    "pres":   {"name": "Pression station",      "unit": "hPa", "device_class": "pressure",    "state_class": "measurement"},
-    "pmer":   {"name": "Pression mer",          "unit": "hPa", "device_class": "pressure",    "state_class": "measurement"},
+    "pres":   {"name": "Pression station",      "unit": "Pa", "device_class": "pressure",    "state_class": "measurement"},
+    "pmer":   {"name": "Pression mer",          "unit": "Pa", "device_class": "pressure",    "state_class": "measurement"},
 
     # Divers
-    "etat_sol": {"name": "État du sol",         "unit": None,  "device_class": None,          "state_class": None},
-    "sss":    {"name": "Neige au sol",          "unit": "cm",  "device_class": None,          "state_class": "measurement"},
-    "n":      {"name": "Nébulosité",            "unit": "%",   "device_class": None,          "state_class": "measurement"},
+    "etat_sol": {"name": "Code de l'état du sol",                    "unit": None,  "device_class": None,          "state_class": None},
+    "sss":      {"name": "hauteur totale de la couverture neigeuse", "unit": "m",  "device_class": None,          "state_class": "measurement"},
+    "n":        {"name": "nébulosité totale",                        "unit": "octas",   "device_class": None,          "state_class": "measurement"},
 }
