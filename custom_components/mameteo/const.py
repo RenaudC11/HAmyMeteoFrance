@@ -75,10 +75,10 @@ SENSOR_SPECS: dict[str, dict] = {
     "vv":     {"name": "Visibilité horizontale",            "unit": "m",   "device_class": "distance",    "state_class": "measurement"},
 
     # Précipitations (mm)
-    "rr_per": {"name": "Précipitations sur 6 min",    "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
-    "rr1":    {"name": "Précipitations dans l'heure",                   "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr_per": {"name": "Précipitations sur 6 min",            "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr1":    {"name": "Précipitations dans l'heure",         "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
     "rr":     {"name": "Précipitations cumulées sur un mois", "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
-    "rr24":   {"name": "Précipitations sur 24h",                  "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
+    "rr24":   {"name": "Précipitations sur 24h",              "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
 
     # Rayonnement / Ensoleillement
     "ray_glo01":  {"name": "Rayonnement global sur la période",       "unit": "W/m²","device_class": "irradiance",  "state_class": "measurement"},
