@@ -1,69 +1,94 @@
 import logging
-import requests
+import aiohttp
 import voluptuous as vol
-
 from homeassistant import config_entries
+from homeassistant.core import callback
+from homeassistant.helpers import aiohttp_client
 
-from .const import DOMAIN, CONF_API_KEY, CONF_STATION_ID, CONF_CITY, CONF_NAME, CONF_DISPLAY_MODE, MODE_ATTRIBUTES, MODE_MULTIPLE
+import math
 
+DOMAIN = "mameteo"
 _LOGGER = logging.getLogger(__name__)
 
-STATION_URL = "https://public-api.meteofrance.fr/public/DPObs/v1/station"
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat/2)**2 +
+         math.cos(math.radians(lat1)) *
+         math.cos(math.radians(lat2)) *
+         math.sin(dlon/2)**2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-class MameteoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class MaMeteoConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
-    def __init__(self):
-        self.user_input = {}
-        self.stations = []
-
     async def async_step_user(self, user_input=None):
-        if user_input:
-            self.user_input[CONF_CITY] = user_input["city"]
-            return await self.async_step_select_station()
-        schema = vol.Schema({vol.Required("city"): str})
-        return self.async_show_form(step_id="user", data_schema=schema)
+        errors = {}
+        if user_input is not None:
+            self.api_key = user_input["api_key"]
+            self.city = user_input["city"]
+            self.entity_name = user_input["entity_name"]
 
-    async def async_step_select_station(self, user_input=None):
-        if user_input:
-            self.user_input[CONF_STATION_ID] = user_input.get("station_id")
-            return await self.async_step_finalize()
+            # Étape suivante : récupérer les stations
+            return await self.async_step_station()
 
-        city = self.user_input[CONF_CITY]
-        try:
-            response = requests.get(f"{STATION_URL}/search?commune={city}")
-            response.raise_for_status()
-            data = response.json()
-            self.stations = data.get("results", [])
-        except Exception as e:
-            _LOGGER.warning("Impossible de récupérer les stations: %s", e)
-            return await self.async_step_manual_station()
-
-        if not self.stations:
-            return await self.async_step_manual_station()
-
-        options = {st["id"]: f"{st['nom']} ({st['id']})" for st in self.stations[:10]}
-        schema = vol.Schema({vol.Required("station_id"): vol.In(options)})
-        return self.async_show_form(step_id="select_station", data_schema=schema)
-
-    async def async_step_manual_station(self, user_input=None):
-        if user_input:
-            self.user_input[CONF_STATION_ID] = user_input["station_id"]
-            return await self.async_step_finalize()
-        schema = vol.Schema({vol.Required("station_id"): str})
-        return self.async_show_form(step_id="manual_station", data_schema=schema)
-
-    async def async_step_finalize(self, user_input=None):
-        if user_input:
-            self.user_input.update(user_input)
-            return self.async_create_entry(title=f"Météo {self.user_input[CONF_CITY]}", data=self.user_input)
         schema = vol.Schema({
-            vol.Required(CONF_API_KEY): str,
-            vol.Required(CONF_NAME, default="mameteo"): str,
-            vol.Required(CONF_DISPLAY_MODE, default=MODE_ATTRIBUTES): vol.In({
-                MODE_ATTRIBUTES: "Un sensor avec attributs",
-                MODE_MULTIPLE: "Un sensor par valeur"
-            })
+            vol.Required("api_key"): str,
+            vol.Required("city"): str,
+            vol.Required("entity_name", default="MaMeteo"): str,
         })
-        return self.async_show_form(step_id="finalize", data_schema=schema)
+        return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+    async def async_step_station(self, user_input=None):
+        session = aiohttp_client.async_get_clientsession(self.hass)
+
+        # 1. Géocodage avec Nominatim
+        async with session.get(f"https://nominatim.openstreetmap.org/search",
+                               params={"q": self.city, "format": "json", "limit": 1}) as resp:
+            data = await resp.json()
+            if not data:
+                return self.async_abort(reason="city_not_found")
+            lat = float(data[0]["lat"])
+            lon = float(data[0]["lon"])
+
+        # 2. Liste des stations Météo-France
+        headers = {"apikey": self.api_key}
+        async with session.get("https://public-api.meteofrance.fr/public/DPObs/v1/station", headers=headers) as resp:
+            stations = await resp.json()
+
+        # 3. Calcul des distances
+        nearby = []
+        for st in stations:
+            s_lat, s_lon = st["lat"], st["lon"]
+            dist = haversine(lat, lon, s_lat, s_lon)
+            nearby.append({
+                "id": st["id"],
+                "name": st["nom"],
+                "dist": round(dist, 1)
+            })
+
+        # 4. Tri par distance
+        nearby.sort(key=lambda x: x["dist"])
+        self.stations = nearby[:10]  # garder les 10 plus proches
+
+        if user_input is not None:
+            chosen = user_input["station"]
+            return self.async_create_entry(
+                title=f"{self.entity_name} ({chosen})",
+                data={
+                    "api_key": self.api_key,
+                    "city": self.city,
+                    "entity_name": self.entity_name,
+                    "station": chosen,
+                }
+            )
+
+        # Créer une liste de choix {id: "Nom (X km)"}
+        options = {st["id"]: f'{st["name"]} ({st["dist"]} km)' for st in self.stations}
+        schema = vol.Schema({
+            vol.Required("station"): vol.In(options)
+        })
+        return self.async_show_form(step_id="station", data_schema=schema)
+
 
