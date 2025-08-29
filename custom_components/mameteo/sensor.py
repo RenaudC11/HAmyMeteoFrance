@@ -1,110 +1,113 @@
-"""Sensor platform for Mameteo (single sensor with attributes)."""
 import logging
-from datetime import timedelta
-from typing import Any
-
 import requests
+from datetime import timedelta
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.core import HomeAssistant
-
-from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL
+from .const import DOMAIN, CONF_API_KEY, CONF_STATION_ID, CONF_DISPLAY_MODE, MODE_ATTRIBUTES
 
 _LOGGER = logging.getLogger(__name__)
-
 API_URL = "https://public-api.meteofrance.fr/public/DPObs/v1/station/infrahoraire-6m"
+SCAN_INTERVAL = timedelta(minutes=10)
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback):
-    """Set up the mameteo sensor from a config entry."""
-    cfg = hass.data[DOMAIN][entry.entry_id]
-    api_key = cfg["api_key"]
-    station = cfg["station"]
-    update_interval = cfg["update_interval"]
-    entity_name = cfg["entity_name"]
+SENSOR_MAP = {
+    "t": {"name": "Température", "unit": "°C", "device_class": "temperature", "state_class": "measurement"},
+    "td": {"name": "Température rosée", "unit": "°C", "device_class": "temperature", "state_class": "measurement"},
+    "tx": {"name": "Température max", "unit": "°C", "device_class": "temperature", "state_class": "measurement"},
+    "tn": {"name": "Température min", "unit": "°C", "device_class": "temperature", "state_class": "measurement"},
+    "u": {"name": "Humidité", "unit": "%", "device_class": "humidity", "state_class": "measurement"},
+    "ux": {"name": "Humidité max", "unit": "%", "device_class": "humidity", "state_class": "measurement"},
+    "un": {"name": "Humidité min", "unit": "%", "device_class": "humidity", "state_class": "measurement"},
+    "dd": {"name": "Direction vent", "unit": "°", "device_class": None, "state_class": "measurement"},
+    "ff": {"name": "Vitesse vent", "unit": "m/s", "device_class": "wind_speed", "state_class": "measurement"},
+    "dxy": {"name": "Dir rafale max", "unit": "°", "device_class": None, "state_class": "measurement"},
+    "fxy": {"name": "Vit rafale max", "unit": "m/s", "device_class": "wind_speed", "state_class": "measurement"},
+    "dxi": {"name": "Dir vent instant", "unit": "°", "device_class": None, "state_class": "measurement"},
+    "fxi": {"name": "Vit vent instant", "unit": "m/s", "device_class": "wind_speed", "state_class": "measurement"},
+    "rr1": {"name": "Pluie 1h", "unit": "mm", "device_class": "precipitation", "state_class": "measurement"},
+    "t_50": {"name": "Température sol 50cm", "unit": "°C", "device_class": "temperature", "state_class": "measurement"},
+    "etat_sol": {"name": "État sol", "unit": None, "device_class": None, "state_class": None},
+    "sss": {"name": "Neige sol", "unit": "cm", "device_class": None, "state_class": "measurement"},
+    "n": {"name": "Nébulosité", "unit": "%", "device_class": None, "state_class": "measurement"},
+    "ray_glo01": {"name": "Rayonnement global", "unit": "W/m²", "device_class": "irradiance", "state_class": "measurement"},
+    "pres": {"name": "Pression station", "unit": "hPa", "device_class": "pressure", "state_class": "measurement"},
+    "pmer": {"name": "Pression mer", "unit": "hPa", "device_class": "pressure", "state_class": "measurement"},
+}
 
-    async_add_entities([MeteoFranceSensor(api_key, station, update_interval, entity_name)], True)
+async def async_setup_entry(hass, entry, async_add_entities):
+    api_key = entry.data[CONF_API_KEY]
+    station_id = entry.data[CONF_STATION_ID]
+    mode = entry.data.get(CONF_DISPLAY_MODE, MODE_ATTRIBUTES)
+    entity_name = entry.data.get("entity_name", "mameteo")
+
+    if mode == MODE_ATTRIBUTES:
+        async_add_entities([MameteoUniqueSensor(api_key, station_id, entity_name)], True)
+    else:
+        entities = []
+        for code, meta in SENSOR_MAP.items():
+            entities.append(MameteoSingleSensor(api_key, station_id, f"{entity_name} {meta['name']}", code, meta))
+        async_add_entities(entities, True)
 
 
-class MeteoFranceSensor(SensorEntity):
-    """Single sensor storing all Meteo-France fields in attributes."""
-
-    def __init__(self, api_key: str, station: str, update_interval: int, entity_name: str):
+class MameteoUniqueSensor(SensorEntity):
+    def __init__(self, api_key, station_id, name):
         self._api_key = api_key
-        self._station = station
-        self._update_interval = timedelta(minutes=update_interval)
-        self._entity_name = entity_name
+        self._station_id = station_id
+        self._attr_name = name
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_unique"
+        self._attr_native_value = None
+        self._attributes = {}
 
-        self._attr_name = entity_name
-        self._attr_unique_id = f"{entity_name}_{station}"
-        self._attr_should_poll = True
-        self._attr_extra_state_attributes: dict[str, Any] = {}
+    @property
+    def extra_state_attributes(self):
+        return self._attributes
+
+    async def async_update(self):
+        data = await self._fetch_data()
+        if data:
+            self._attr_native_value = data.get("t")
+            self._attributes = data
+
+    async def _fetch_data(self):
+        try:
+            headers = {"apikey": self._api_key}
+            url = f"{API_URL}/{self._station_id}"
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            json_data = resp.json()
+            return json_data.get("obs", [{}])[-1]
+        except Exception as e:
+            _LOGGER.error("Erreur récupération Météo-France: %s", e)
+            return None
+
+
+class MameteoSingleSensor(SensorEntity):
+    def __init__(self, api_key, station_id, name, code, meta):
+        self._api_key = api_key
+        self._station_id = station_id
+        self._attr_name = name
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_{code}"
+        self._code = code
+        self._meta = meta
+        self._attr_device_class = meta.get("device_class")
+        self._attr_native_unit_of_measurement = meta.get("unit")
+        self._attr_state_class = meta.get("state_class")
         self._attr_native_value = None
 
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, f"{self._entity_name}_{self._station}")},
-            "name": f"Ma Météo France ({self._entity_name})",
-            "manufacturer": "Météo-France",
-            "model": "DPObs 6min",
-        }
+    async def async_update(self):
+        data = await self._fetch_data()
+        if data:
+            val = data.get(self._code)
+            if val is not None and self._meta["unit"] == "°C":
+                val = round(val - 273.15, 2)
+            self._attr_native_value = val
 
-    @property
-    def native_value(self):
-        return self._attr_native_value
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        return self._attr_extra_state_attributes
-
-    @property
-    def scan_interval(self) -> timedelta:
-        return self._update_interval
-
-    def update(self) -> None:
-        """Fetch data from Meteo-France (synchronous)."""
+    async def _fetch_data(self):
         try:
-            params = {"id_station": self._station, "format": "json", "apikey": self._api_key}
-            resp = requests.get(API_URL, params=params, timeout=15)
+            headers = {"apikey": self._api_key}
+            url = f"{API_URL}/{self._station_id}"
+            resp = requests.get(url, headers=headers, timeout=10)
             resp.raise_for_status()
-            data = resp.json()
-
-            if not isinstance(data, list) or len(data) == 0:
-                _LOGGER.error("Unexpected API response or empty data: %s", data)
-                return
-
-            obs = data[0]
-
-            t = obs.get("t")
-            t_10 = obs.get("t_10")
-            t_20 = obs.get("t_20")
-            t_100 = obs.get("t_100")
-            ff = obs.get("ff")
-            fxi10 = obs.get("fxi10")
-            p = obs.get("pres")
-            rg = obs.get("ray_glo01")
-
-            attrs: dict[str, Any] = {
-                "reference_time": {"value": obs.get("reference_time"), "unit": "UTC"},
-                "temperature": {"value": round((t - 273.15), 2) if t else None, "unit": "°C"},
-                "temperature_10cm": {"value": round((t_10 - 273.15), 2) if t_10 else None, "unit": "°C"},
-                "temperature_20cm": {"value": round((t_20 - 273.15), 2) if t_20 else None, "unit": "°C"},
-                "temperature_100cm": {"value": round((t_100 - 273.15), 2) if t_100 else None, "unit": "°C"},
-                "humidite": {"value": obs.get("u"), "unit": "%"},
-                "pression": {"value": round((p / 100), 1) if p else None, "unit": "hPa"},
-                "vent_direction": {"value": obs.get("dd"), "unit": "°"},
-                "vent_force": {"value": round((ff * 3.6), 1) if ff else None, "unit": "km/h"},
-                "rafale_direction": {"value": obs.get("dxi10"), "unit": "°"},
-                "rafale_force": {"value": round((fxi10 * 3.6), 1) if fxi10 else None, "unit": "km/h"},
-                "precipitation": {"value": obs.get("rr_per"), "unit": "mm"},
-                "puissance_solaire": {"value": round((rg / 360), 2) if rg else None, "unit": "W/m²"},
-                "ensoleillement": {"value": obs.get("insolh"), "unit": "min"},
-                "visibilite": {"value": obs.get("vv"), "unit": "m"},
-                "raw": obs,
-            }
-
-            self._attr_native_value = attrs["temperature"]["value"]
-            self._attr_extra_state_attributes = attrs
-
-        except Exception as exc:
-            _LOGGER.error("Error fetching Meteo-France data: %s", exc)
+            json_data = resp.json()
+            return json_data.get("obs", [{}])[-1]
+        except Exception as e:
+            _LOGGER.error("Erreur récupération Météo-France: %s", e)
+            return None
