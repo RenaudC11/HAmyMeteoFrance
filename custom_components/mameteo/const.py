@@ -81,7 +81,7 @@ SENSOR_SPECS: dict[str, dict] = {
     "rr24":   {"name": "Précipitations 24h",                "unit": "mm",  "device_class": "precipitation","state_class": "measurement"},
 
     # Rayonnement / Ensoleillement
-    "ray_glo01":  {"name": "Rayonnement global sur la période",       "unit": "J/m²","device_class": "irradiance",  "state_class": "measurement"},
+    "ray_glo01":  {"name": "Rayonnement global sur la période",       "unit": "W/m²","device_class": "irradiance",  "state_class": "measurement"},
     "insolh":     {"name": "durée insolation au cours de la période", "unit": "min", "device_class": None,          "state_class": "measurement"},
 
     # Pression (Pa -> hPa)
