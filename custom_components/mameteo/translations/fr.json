@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ma Météo France (DPObs 6 min)",
+        "description": "Renseignez la clé API, la station et le mode de capteurs.",
+        "data": {
+          "api_key": "Clé API Météo-France",
+          "station_id": "ID station (ex: 69029001)",
+          "entity_name": "Nom de l'entité",
+          "mode": "Mode de capteurs",
+          "update_minutes": "Période d’actualisation (minutes)"
+        }
+      }
+    }
+  }
+}
