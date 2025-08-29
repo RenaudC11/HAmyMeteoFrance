@@ -85,8 +85,8 @@ SENSOR_SPECS: dict[str, dict] = {
     "insolh":     {"name": "durée insolation au cours de la période", "unit": "min", "device_class": None,          "state_class": "measurement"},
 
     # Pression (Pa -> hPa)
-    "pres":   {"name": "Pression station",      "unit": "Pa", "device_class": "pressure",    "state_class": "measurement"},
-    "pmer":   {"name": "Pression mer",          "unit": "Pa", "device_class": "pressure",    "state_class": "measurement"},
+    "pres":   {"name": "Pression station",      "unit": "hPa", "device_class": "pressure",    "state_class": "measurement"},
+    "pmer":   {"name": "Pression mer",          "unit": "hPa", "device_class": "pressure",    "state_class": "measurement"},
 
     # Divers
     "etat_sol": {"name": "Code de l'état du sol",                    "unit": None,  "device_class": None,          "state_class": None},
